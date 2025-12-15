@@ -2,15 +2,16 @@ package main
 
 import (
 	"net/http"
+	"time"
+
+	"github.com/cosmopolitics/cardingester/internal"
 )
 
-type config struct {
-	client *http.Client
-}
-
 func main() {
-	cfg := &config{
+	cache := cardingester.NewCache(time.Hour * 20)
+	cfg := &Config{
 		client: &http.Client{},
+		cache: &cache,
 	}
 	startRepl(cfg)
 }

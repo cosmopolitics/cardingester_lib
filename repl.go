@@ -3,42 +3,22 @@ package main
 import (
 	"bufio"
 	"fmt"
-	// "github.com/cosmopolitics/cardingester/internal"
-	"io"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/cosmopolitics/cardingester/internal"
 )
+
+type Config struct {
+	client *http.Client
+	cache  *cardingester.Cache
+}
 
 type Command struct {
 	name        string
 	description string
-	callback    func(*config, []string) error
-}
-
-func startRepl(cfg *config) {
-	reader := bufio.NewScanner(os.Stdin)
-	for {
-		fmt.Print("cardingester > ")
-		reader.Scan()
-
-		commands := cleanInput(reader.Text())
-		if len(commands) == 0 {
-			continue
-		}
-
-		cmd, exists := getCommands()[commands[0]]
-		if exists {
-			err := cmd.callback(cfg, commands)
-			if err != nil {
-				fmt.Println(err)
-			}
-			continue
-		} else {
-			fmt.Println("Unknown command")
-			continue
-		}
-	}
+	callback    func(*Config, []string) error
 }
 
 func cleanInput(text string) []string {
@@ -62,7 +42,7 @@ func getCommands() map[string]Command {
 	}
 }
 
-func commandHelp(cfg *config, params []string) error {
+func commandHelp(cfg *Config, params []string) error {
 	for _, cmd := range getCommands() {
 		_, err := fmt.Printf("%s %s", cmd.name, cmd.description)
 		if err != nil {
@@ -72,7 +52,7 @@ func commandHelp(cfg *config, params []string) error {
 	return nil
 }
 
-func commandExit(cfg *config, params []string) error {
+func commandExit(cfg *Config, params []string) error {
 	_, err := fmt.Printf("Closing the Pokedex... Goodbye!")
 	if err != nil {
 		return err
@@ -81,25 +61,26 @@ func commandExit(cfg *config, params []string) error {
 	return nil
 }
 
-func (cfg *config) getBlob(url string) ([]byte, error) {
-	request, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("error creating request: %v", err)
-	}
+func startRepl(cfg *Config) {
+	reader := bufio.NewScanner(os.Stdin)
 
-	// setting a header on the new request
-	request.Header.Set("User-Agent", "cardingest/1.0")
-	request.Header.Set("Accept", "application/json")
+	for {
+		fmt.Print("cardingester > ")
+		reader.Scan()
 
-	res, err := cfg.client.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("error making request: %v", err)
-	}
-	defer res.Body.Close()
-	blob, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, fmt.Errorf("io error: %v", err)
-	}
+		commands := cleanInput(reader.Text())
+		if len(commands) == 0 {
+			continue
+		}
 
-	return blob, nil
+		cmd, exists := getCommands()[commands[0]]
+		if exists {
+			err := cmd.callback(cfg, commands)
+			if err != nil {
+				fmt.Println(err)
+			}
+		} else {
+			fmt.Println("Unknown command")
+		}
+	}
 }
