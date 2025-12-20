@@ -6,10 +6,10 @@ import (
 type Bulk_Option_Response struct {
 	Object  string `json:"object"`
 	HasMore bool   `json:"has_more"`
-	Data    []Data `json:"data"`
+	Data    []Bulk_Entry `json:"data"`
 }
 
-type Data struct {
+type Bulk_Entry struct {
 	Object          string    `json:"object"`
 	ID              string    `json:"id"`
 	Type            string    `json:"type"`

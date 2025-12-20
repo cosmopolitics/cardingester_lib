@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	cache := cardingester.NewCache(time.Hour * 20)
+	cache := cardingester.NewCache(time.Minute * 20)
 	cfg := &Config{
 		client: &http.Client{},
 		cache: &cache,
