@@ -1,15 +1,11 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"image"
 	"os"
 
 	"github.com/cosmopolitics/cardingester/internal"
-	"github.com/dolmen-go/kittyimg"
-	"github.com/sunshineplan/imgconv"
 )
 
 func commandHelp(cfg *Config, params []string) error {
@@ -83,35 +79,21 @@ func commandSearch(cfg *Config, params []string) error {
 		if err != nil {
 			return err
 		}
-		for _, c := range search_json.Data {
-			fmt.Println(c.Name)
-		}
 		if search_json.Has_more == true {
 			fmt.Println("there is a next page")
 		}
 
 		if len(search_json.Data) < 3 {
 			for _, c := range search_json.Data {
-				img, _, err := findScryfallBlob(c.ImageUris.Png, cfg.cache, cfg.client)
+				fmt.Println(c.Name)
+				err := displayImage(c.ImageUris.Png, cfg)
 				if err != nil {
 					return err
 				}
-				decodedImage, _, err := image.Decode(bytes.NewReader(img))
-				if err != nil {
-					return err
-				}
-
-				imageBuffer := new(bytes.Buffer)
-				err = imgconv.Write(imageBuffer, decodedImage, &imgconv.FormatOption{Format: imgconv.PNG})
-				if err != nil {
-					return err
-				}
-
-				err = kittyimg.Transcode(os.Stdout, imageBuffer)
-				fmt.Print("\n")
-				if err != nil {
-					return err
-				}
+			}
+		} else {
+			for _, c := range search_json.Data {
+				fmt.Println(c.Name)
 			}
 		}
 	} else {

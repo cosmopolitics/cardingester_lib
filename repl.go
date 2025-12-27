@@ -8,7 +8,11 @@ import (
 	"os"
 	"strings"
 
+	"bytes"
+	"github.com/dolmen-go/kittyimg"
 	"github.com/fatih/color"
+	"github.com/sunshineplan/imgconv"
+	"image"
 
 	"github.com/cosmopolitics/cardingester/internal"
 )
@@ -83,44 +87,48 @@ func findScryfallBlob(url string, cache *cardingester.Cache, client *http.Client
 }
 
 func ScryfallUrlConstructor(params []string) (string, error) {
-	baseUrl := "https://api.scryfall.com/cards/search?q="
+	baseUrl := "https://api.scryfall.com/cards/search?order=name&q="
 	var url string = baseUrl
 
-	for _, s := range params[:1] {
-		if s == "search" {
-			continue
-		}
-		if strings.Contains(s, ":") {
-			p := strings.Split(s, ":")
-			if len(p) < 2 {
-				return "", fmt.Errorf("um split failed")
-			}
+	for _, word := range params[1:] {
+		if strings.Contains(word, "order:") {
+			sortmode := strings.Split(word, "order:")
+			preurl := strings.Split(url, "order=")
+			queryurl := strings.Split(url, "q=")
 
-			url = fmt.Sprintf("%s%s=%s", url, p[0], p[1])
+			url = fmt.Sprintf("%sorder=%s&q=%s", preurl[0], sortmode[1], queryurl[1])
+
+		} else {
+			url = fmt.Sprintf("%s%s", url, word)
 		}
 	}
 
-	for _, s := range params[:1] {
-		if s == "search" {
-			continue
-		}
-		if strings.Contains(s, "order:") {
-			p := strings.Split(url, "?")
-			if len(p) < 2 {
-				return "", fmt.Errorf("um split failed")
-			}
-			url = fmt.Sprintf("%s%s%s", p[0], "order=", p[1])
-		}
-	}
-
-	for _, s := range params {
-		if s == "search" {
-			continue
-		}
-		url = fmt.Sprintf("%s%s", url, s)
-	}
-
+	fmt.Println(url)
 	return url, nil
+}
+
+func displayImage(url string, cfg *Config) error {
+	img, _, err := findScryfallBlob(url, cfg.cache, cfg.client)
+	if err != nil {
+		return err
+	}
+	decodedImage, _, err := image.Decode(bytes.NewReader(img))
+	if err != nil {
+		return err
+	}
+
+	imageBuffer := new(bytes.Buffer)
+	err = imgconv.Write(imageBuffer, decodedImage, &imgconv.FormatOption{Format: imgconv.PNG})
+	if err != nil {
+		return err
+	}
+
+	err = kittyimg.Transcode(os.Stdout, imageBuffer)
+	fmt.Print("\n")
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func startRepl(cfg *Config) {
