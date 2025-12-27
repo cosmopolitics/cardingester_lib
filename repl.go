@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"net/url"
 
 	"bytes"
 	"github.com/dolmen-go/kittyimg"
@@ -87,24 +88,40 @@ func findScryfallBlob(url string, cache *cardingester.Cache, client *http.Client
 }
 
 func ScryfallUrlConstructor(params []string) (string, error) {
-	baseUrl := "https://api.scryfall.com/cards/search?order=name&q="
-	var url string = baseUrl
+	baseUrl := "https://api.scryfall.com/cards/"
+	query := url.Values{}
+	finalUrl := baseUrl + "search?" 
 
+	var filter []string
+	var name_text []string
 	for _, word := range params[1:] {
-		if strings.Contains(word, "order:") {
-			sortmode := strings.Split(word, "order:")
-			preurl := strings.Split(url, "order=")
-			queryurl := strings.Split(url, "q=")
+		if strings.Contains(word, ":") {
+			filter = append(filter, word)
 
-			url = fmt.Sprintf("%sorder=%s&q=%s", preurl[0], sortmode[1], queryurl[1])
+		} else if strings.Contains(word, "order:") {
+			sort := strings.Split(word, "order:")
+			finalUrl = finalUrl + "order%3D" + sort[1] + "&"
 
 		} else {
-			url = fmt.Sprintf("%s%s", url, word)
+			name_text = append(name_text, word)
 		}
 	}
 
-	fmt.Println(url)
-	return url, nil
+	plain_text := strings.Join(name_text, " ")
+	query.Add("q", plain_text)
+
+	for _, f := range filter {
+		fparts := strings.Split(f, ":")
+		if len(fparts) < 2 {
+			return "", fmt.Errorf("filter split failed %v", fparts)
+		}
+		query.Add(fparts[0], fparts[1])
+	}
+
+	finalUrl = finalUrl + "&" + query.Encode()
+	fmt.Println(finalUrl)
+
+	return finalUrl, nil
 }
 
 func displayImage(url string, cfg *Config) error {
@@ -124,10 +141,10 @@ func displayImage(url string, cfg *Config) error {
 	}
 
 	err = kittyimg.Transcode(os.Stdout, imageBuffer)
-	fmt.Print("\n")
 	if err != nil {
 		return err
 	}
+	fmt.Print("\n")
 	return nil
 }
 

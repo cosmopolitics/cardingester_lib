@@ -63,6 +63,10 @@ func commandGetCardData(cfg *Config, params []string) error {
 }
 
 func commandSearch(cfg *Config, params []string) error {
+	if len(params[1:]) < 1 {
+		return fmt.Errorf("no search terms")
+	}
+
 	url, err := ScryfallUrlConstructor(params)
 	if err != nil {
 		return err
@@ -85,16 +89,21 @@ func commandSearch(cfg *Config, params []string) error {
 
 		if len(search_json.Data) < 3 {
 			for _, c := range search_json.Data {
-				fmt.Println(c.Name)
-				err := displayImage(c.ImageUris.Png, cfg)
+				fmt.Println()
+				err := displayImage(c.ImageUris.Large, cfg)
 				if err != nil {
 					return err
 				}
 			}
 		} else {
 			for _, c := range search_json.Data {
-				fmt.Println(c.Name)
+				fmt.Println()
+				err := displayImage(c.ImageUris.Normal, cfg)
+				if err != nil {
+					return err
+				}
 			}
+			fmt.Println()
 		}
 	} else {
 		var scryfall_error cardingester.Error_Response
