@@ -11,7 +11,7 @@ func main() {
 	cache := cardingester.NewCache(time.Minute * 20)
 	cfg := &Config{
 		client: &http.Client{},
-		cache: &cache,
+		cache:  &cache,
 	}
 	startRepl(cfg)
 }

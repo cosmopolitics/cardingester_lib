@@ -19,6 +19,8 @@
           packages = with pkgs; [
             go
             sqlite
+            gopls
+            delve
           ];
         };
         formatter = pkgs.alejandra;

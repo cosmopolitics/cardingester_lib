@@ -1,11 +1,12 @@
 package cardingester
+
 import (
 	"time"
 )
 
 type Bulk_Option_Response struct {
-	Object  string `json:"object"`
-	HasMore bool   `json:"has_more"`
+	Object  string       `json:"object"`
+	HasMore bool         `json:"has_more"`
 	Data    []Bulk_Entry `json:"data"`
 }
 
@@ -48,14 +49,14 @@ type MtgCard struct {
 		ArtCrop    string `json:"art_crop"`
 		BorderCrop string `json:"border_crop"`
 	} `json:"image_uris"`
-	ManaCost      string        `json:"mana_cost"`
-	Cmc           float64       `json:"cmc"`
-	TypeLine      string        `json:"type_line"`
-	OracleText    string        `json:"oracle_text"`
+	ManaCost      string   `json:"mana_cost"`
+	Cmc           float64  `json:"cmc"`
+	TypeLine      string   `json:"type_line"`
+	OracleText    string   `json:"oracle_text"`
 	Colors        []string `json:"colors"`
-	ColorIdentity []string      `json:"color_identity"`
+	ColorIdentity []string `json:"color_identity"`
 	Keywords      []string `json:"keywords"`
-	ProducedMana  []string      `json:"produced_mana"`
+	ProducedMana  []string `json:"produced_mana"`
 	Legalities    struct {
 		Standard        string `json:"standard"`
 		Future          string `json:"future"`
@@ -112,12 +113,12 @@ type MtgCard struct {
 	Booster         bool     `json:"booster"`
 	StorySpotlight  bool     `json:"story_spotlight"`
 	Prices          struct {
-		Usd       string      `json:"usd"`
-		UsdFoil   string      `json:"usd_foil"`
+		Usd       string `json:"usd"`
+		UsdFoil   string `json:"usd_foil"`
 		UsdEtched string `json:"usd_etched"`
-		Eur       string      `json:"eur"`
-		EurFoil   string      `json:"eur_foil"`
-		Tix       string      `json:"tix"`
+		Eur       string `json:"eur"`
+		EurFoil   string `json:"eur_foil"`
+		Tix       string `json:"tix"`
 	} `json:"prices"`
 	RelatedUris struct {
 		Gatherer                  string `json:"gatherer"`
@@ -130,4 +131,19 @@ type MtgCard struct {
 		Cardmarket  string `json:"cardmarket"`
 		Cardhoarder string `json:"cardhoarder"`
 	} `json:"purchase_uris"`
+}
+
+type Search_Response struct {
+	Object      string    `json:"object"`
+	Total_cards int       `json:"total_cards"`
+	Has_more    bool      `json:"has_more"`
+	Data        []MtgCard `json:"data"`
+}
+
+type Error_Response struct {
+	Object   string   `json:"object"`
+	Code     string   `json:"bad_request"`
+	Status   int      `json:"status"`
+	Warnings []string `json:warnings`
+	Details  string   `json:"details"`
 }
